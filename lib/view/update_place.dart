@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -17,21 +16,21 @@ class UpdatePlace extends StatefulWidget {
 
 class _UpdatePlaceState extends State<UpdatePlace> {
   // === Property ===
-  late DatabaseHandler _handler;
-  late TextEditingController _latTextEditingController;
-  late TextEditingController _lngTextEditingController;
-  late TextEditingController _nameTextEditingController;
-  late TextEditingController _phoneTextEditingController;
-  late TextEditingController _estimateTextEditingController;
+  late DatabaseHandler _handler; // DatabaseHandler 인스턴스
+  late TextEditingController _latTextEditingController; // 위도를 표현하는 TextEditingController
+  late TextEditingController _lngTextEditingController;  // 경도를 표현하는 TextEditingController
+  late TextEditingController _nameTextEditingController; // 이름 TextEditingController
+  late TextEditingController _phoneTextEditingController; // 전화 TextEditingController
+  late TextEditingController _estimateTextEditingController; // 평가 TextEditingController
 
-  late Position _currentPosition;
-  late double _latData;
-  late double _lngData;
-  late  int _firstDisp;
+  late Position _currentPosition; // 현재 위치 정보
+  late double _latData; // 위도 데이터
+  late double _lngData;  // 경도 데이터
+  late  int _firstDisp; // 첫 화면 표시 여부
 
-  final ImagePicker _imagePicker = ImagePicker();
-  final Place _place = Get.arguments ?? '__';
-  XFile? _imageFile;
+  final ImagePicker _imagePicker = ImagePicker(); // 이미지 픽커 인스턴스
+  final Place _place = Get.arguments ?? '__'; // 전달된 Place 객체
+  XFile? _imageFile; // 선택된 이미지 파일
 
   @override
   void initState() {

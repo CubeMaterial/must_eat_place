@@ -1,5 +1,4 @@
 import 'package:must_eat_place/model/place.dart';
-import 'package:must_eat_place/view/insert_place.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 

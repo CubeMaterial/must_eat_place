@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:must_eat_place/model/place.dart';
 import 'package:must_eat_place/vm/database_handler.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart' as latlng;
 
 class InsertPlace extends StatefulWidget {
   const InsertPlace({super.key});
@@ -17,19 +16,19 @@ class InsertPlace extends StatefulWidget {
 
 class _InsertPlaceState extends State<InsertPlace> {
   // === Property ===
-  late DatabaseHandler _handler;
-  late TextEditingController _latTextEditingController;
-  late TextEditingController _lngTextEditingController;
-  late TextEditingController _nameTextEditingController;
-  late TextEditingController _phoneTextEditingController;
-  late TextEditingController _estimateTextEditingController;
+  late DatabaseHandler _handler; // DatabaseHandler 인스턴스
+  late TextEditingController _latTextEditingController; // 위도를 표현하는 TextEditingController
+  late TextEditingController _lngTextEditingController; // 경도를 표현하는 TextEditingController
+  late TextEditingController _nameTextEditingController; // 이름 TextEditingController
+  late TextEditingController _phoneTextEditingController; // 전화 TextEditingController
+  late TextEditingController _estimateTextEditingController; // 평가 TextEditingController
 
-  late Position _currentPosition;
-  late double _latData;
-  late double _lngData;
+  late Position _currentPosition; // 현재 위치 정보를 담는 Position
+  late double _latData; // 위도 데이터
+  late double _lngData; // 경도 데이터
 
-  final ImagePicker _imagePicker = ImagePicker();
-  XFile? _imageFile;
+  final ImagePicker _imagePicker = ImagePicker(); // 이미지 픽커 인스턴스
+  XFile? _imageFile; // 선택된 이미지 파일
 
   @override
   void initState() {

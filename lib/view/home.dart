@@ -56,12 +56,14 @@ class _HomeState extends State<Home> {
                       padding: const EdgeInsets.all(8.0),
                       child: Slidable(
                         startActionPane: ActionPane(
-                          motion: BehindMotion(),
+                          motion: ScrollMotion(),
                           children: [
                             SlidableAction(
                               backgroundColor: Colors.blue,
                               icon: Icons.edit,
                               label: '수정',
+
+                              borderRadius: BorderRadius.all(Radius.circular(0)),
                               onPressed: (context) {
                                 Get.to(
                                   UpdatePlace(),
@@ -98,6 +100,7 @@ class _HomeState extends State<Home> {
                           },
                           child: Card(
                             color: Theme.of(context).colorScheme.secondary,
+                            
                             child: Row(
                               children: [
                                 Padding(

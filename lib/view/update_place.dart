@@ -25,7 +25,6 @@ class _UpdatePlaceState extends State<UpdatePlace> {
   late TextEditingController _addressTextEditingController; // 주소 TextEditingController
   late TextEditingController _estimateTextEditingController; // 평가 TextEditingController
 
-  late Position _currentPosition; // 현재 위치 정보
   late double _latData; // 위도 데이터
   late double _lngData;  // 경도 데이터
   late  int _firstDisp; // 첫 화면 표시 여부
@@ -85,24 +84,30 @@ class _UpdatePlaceState extends State<UpdatePlace> {
                 child: Text('이미지 가져오기'),
               ),
               _firstDisp == 0 ?
-              Container(
-                 width: MediaQuery.widthOf(context),
-                height: 200,
-                color: Colors.grey,
-                child: Image.memory(_place.placeImage)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Container(
+                   width: MediaQuery.widthOf(context),
+                  height: 200,
+                  color: Colors.grey,
+                  child: Image.memory(_place.placeImage)
+                ),
               )
-              :Container(
-                width: MediaQuery.widthOf(context),
-                height: 200,
-                color: Colors.grey,
-                child: _imageFile != null
-                    ? Image.file(File(_imageFile!.path) )
-                    : Center(
-                        child: Text(
-                          '이미지가 선택되지 않았습니다',
-                          style: TextStyle(fontSize: 24),
+              :Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Container(
+                  width: MediaQuery.widthOf(context),
+                  height: 200,
+                  color: Colors.grey,
+                  child: _imageFile != null
+                      ? Image.file(File(_imageFile!.path) )
+                      : Center(
+                          child: Text(
+                            '이미지가 선택되지 않았습니다',
+                            style: TextStyle(fontSize: 24),
+                          ),
                         ),
-                      ),
+                ),
               ),
               SizedBox(
                 height: 100,

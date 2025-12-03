@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,19 +17,20 @@ class InsertPlace extends StatefulWidget {
 
 class _InsertPlaceState extends State<InsertPlace> {
   // === Property ===
-  late DatabaseHandler _handler; // DatabaseHandler 인스턴스
-  late TextEditingController _latTextEditingController; // 위도를 표현하는 TextEditingController
-  late TextEditingController _lngTextEditingController; // 경도를 표현하는 TextEditingController
-  late TextEditingController _nameTextEditingController; // 이름 TextEditingController
-  late TextEditingController _phoneTextEditingController; // 전화 TextEditingController
-  late TextEditingController _estimateTextEditingController; // 평가 TextEditingController
+  late DatabaseHandler _handler;
+  late TextEditingController _latTextEditingController;
+  late TextEditingController _lngTextEditingController;
+  late TextEditingController _nameTextEditingController;
+  late TextEditingController _phoneTextEditingController;
+  late TextEditingController _addressTextEditingController;
+  late TextEditingController _estimateTextEditingController;
 
-  late Position _currentPosition; // 현재 위치 정보를 담는 Position
-  late double _latData; // 위도 데이터
-  late double _lngData; // 경도 데이터
+  late Position _currentPosition;
+  late double _latData;
+  late double _lngData;
 
-  final ImagePicker _imagePicker = ImagePicker(); // 이미지 픽커 인스턴스
-  XFile? _imageFile; // 선택된 이미지 파일
+  final ImagePicker _imagePicker = ImagePicker();
+  XFile? _imageFile;
 
   @override
   void initState() {
@@ -38,6 +40,7 @@ class _InsertPlaceState extends State<InsertPlace> {
     _lngTextEditingController = TextEditingController();
     _nameTextEditingController = TextEditingController();
     _phoneTextEditingController = TextEditingController();
+    _addressTextEditingController = TextEditingController();
     _estimateTextEditingController = TextEditingController();
     _latTextEditingController = TextEditingController();
     _latData = 0;
@@ -57,94 +60,135 @@ class _InsertPlaceState extends State<InsertPlace> {
 
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  getImageFromGallery(ImageSource.gallery);
-                },
-                child: Text('이미지 가져오기'),
-              ),
-        
-              Container(
-                width: MediaQuery.widthOf(context),
-                height: 200,
-                color: Colors.grey,
-                child: _imageFile != null
-                    ? Image.file(File(_imageFile!.path))
-                    : Center(
-                        child: Text(
-                          '이미지가 선택되지 않았습니다',
-                          style: TextStyle(fontSize: 24),
+        child: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    getImageFromGallery(ImageSource.gallery);
+                  },
+                  style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          foregroundColor: Theme.of(context).colorScheme.onTertiary,
+                          shape: RoundedRectangleBorder(borderRadius:BorderRadiusGeometry.circular(10)),
+                        ),  
+                  child: Text('이미지 가져오기'),
+                ),
+          
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Container(
+                    width: MediaQuery.widthOf(context),
+                    height: 200,
+                    color: Colors.grey,
+                    child: _imageFile != null
+                        ? Image.file(File(_imageFile!.path))
+                        : Center(
+                            child: Text(
+                              '이미지가 선택되지 않았습니다',
+                              style: TextStyle(fontSize: 24),
+                            ),
+                          ),
+                  ),
+                ),
+                SizedBox(
+                  height: 100,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 10,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: TextField(
+                          controller: _latTextEditingController,
+                          decoration: InputDecoration(labelText: '위도'),
+                          readOnly: true
                         ),
                       ),
-              ),
-              SizedBox(
-                height: 100,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  spacing: 10,
-                  children: [
-                    SizedBox(
-                      width: 150,
-                      child: TextField(
-                        controller: _latTextEditingController,
-                        decoration: InputDecoration(labelText: '위도'),
-                        readOnly: true
+                      SizedBox(
+                        width: 150,
+                        child: TextField(
+                          controller: _lngTextEditingController,
+                          decoration: InputDecoration(labelText: '경도'),
+                          readOnly: true
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: TextField(
-                        controller: _lngTextEditingController,
-                        decoration: InputDecoration(labelText: '경도'),
-                        readOnly: true
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  child: TextField(
+                    controller: _nameTextEditingController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: '이름'),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  child: TextField(
+                    controller: _phoneTextEditingController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: '전화'),
+                      keyboardType: TextInputType.phone,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.widthOf(context) * 0.7,
+                        child: TextField(
+                          controller: _addressTextEditingController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: '주소'),
+                        ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
+                        child: ElevatedButton(onPressed: () {
+                          getCurrentLocation();
+                        }, 
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          foregroundColor: Theme.of(context).colorScheme.onTertiary,
+                          shape: RoundedRectangleBorder(borderRadius:BorderRadiusGeometry.circular(10)),
+                        ),
+                        child: Text('추출')),
+                      )
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                child: TextField(
-                  controller: _nameTextEditingController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: '이름'),
-                    // maxLength: 30,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  child: TextField(
+                    controller: _estimateTextEditingController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: '평가'),
+                      maxLength: 50,
+                      maxLines: 3,
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                child: TextField(
-                  controller: _phoneTextEditingController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: '전화'),
-                    // maxLength: 14,
-                    keyboardType: TextInputType.phone,
+                ElevatedButton(
+                  onPressed: () {
+                    checkInsert();
+                  },
+                  style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          foregroundColor: Theme.of(context).colorScheme.onTertiary,
+                          shape: RoundedRectangleBorder(borderRadius:BorderRadiusGeometry.circular(10)),
+                        ),
+                  child: Text('입력'),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                child: TextField(
-                  controller: _estimateTextEditingController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: '평가'),
-                    maxLength: 50,
-                    maxLines: 3,
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  checkInsert();
-                },
-                child: Text('입력'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -158,6 +202,7 @@ class _InsertPlaceState extends State<InsertPlace> {
     if(_nameTextEditingController.text.trim().isEmpty ||
     _phoneTextEditingController.text.trim().isEmpty ||
     _estimateTextEditingController.text.trim().isEmpty || 
+    _addressTextEditingController.text.trim().isEmpty ||
     _imageFile == null
     )
     {
@@ -177,6 +222,7 @@ class _InsertPlaceState extends State<InsertPlace> {
       {
         insertAction();
       }
+
     }
   }
 
@@ -188,6 +234,7 @@ class _InsertPlaceState extends State<InsertPlace> {
     Place place = Place(
       placeName: _nameTextEditingController.text.trim(), 
       placePhone: _phoneTextEditingController.text.trim(), 
+      placeAddress: _addressTextEditingController.text.trim(),
       placeLat: _latData, 
       placeLng: _lngData, 
       placeImage: getImage, 
@@ -232,6 +279,11 @@ class _InsertPlaceState extends State<InsertPlace> {
             Get.back();
             Get.back();
           },
+          style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          foregroundColor: Theme.of(context).colorScheme.onTertiary,
+                          shape: RoundedRectangleBorder(borderRadius:BorderRadiusGeometry.circular(10)),
+                        ),
           child: Text('확인'),
         ),
       ],
@@ -249,15 +301,23 @@ class _InsertPlaceState extends State<InsertPlace> {
   }
 
   Future getCurrentLocation() async {
-    Position position =
-        await Geolocator.getCurrentPosition(); // Geolocator에서 현재 위치를 가져올 동안 대기하고 position에 넣기
-    _currentPosition = position;
-    _latData = _currentPosition.latitude;
-    _lngData = _currentPosition.longitude;
-    _latTextEditingController.text = _latData.toString().substring(0,9);
-    _lngTextEditingController.text = _lngData.toString().substring(0,9);
     // print('$_latData, $_longData, $_canRun');
-    setState(() {});
+    if(_addressTextEditingController.text.trim().isEmpty)
+    {
+      showErrorSnackBar('주소를 입력하세요');
+    }
+    else
+    {
+      List<Location> locations = await locationFromAddress(_addressTextEditingController.text.trim());
+
+      _latData = locations.first.latitude;
+      _lngData = locations.first.longitude;
+      _latTextEditingController.text = _latData.toString().substring(0,9);
+      _lngTextEditingController.text = _lngData.toString().substring(0,9);
+
+      // print('$_latData, $_lngData, ${locations.first}');
+      setState(() {});
+    }
   }
 
   void checkLocationPermission() async {
@@ -273,7 +333,7 @@ class _InsertPlaceState extends State<InsertPlace> {
     if (permission == LocationPermission.whileInUse ||
         permission == LocationPermission.always) {
       // 퍼미션 허용
-      getCurrentLocation();
+      // getCurrentLocation(); 서울 서초구 서초대로50길 82
     }
   }
 }// class

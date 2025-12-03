@@ -49,6 +49,7 @@ class _HomeState extends State<Home> {
         builder: (context, snapshot) {
           return snapshot.hasData && snapshot.data!.isNotEmpty
               ? ListView.builder(
+                  physics: BouncingScrollPhysics(),
                   itemCount: snapshot.data!.length,
                   itemBuilder: (context, index) {
                     return Padding(
@@ -76,60 +77,116 @@ class _HomeState extends State<Home> {
                           motion: BehindMotion(),
                           children: [
                             SlidableAction(
-                              backgroundColor: Colors.blue,
+                              backgroundColor: Colors.red,
                               icon: Icons.edit,
                               label: '삭제',
                               onPressed: (context) async {
                                 await _handler.deletePlace(
                                   snapshot.data![index],
                                 );
+                                setState(() {});
                               },
                             ),
                           ],
                         ),
                         child: GestureDetector(
                           onTap: () {
-                            Get.to(ShowPlace(), arguments: snapshot.data![index]);
+                            Get.to(
+                              ShowPlace(),
+                              arguments: snapshot.data![index],
+                            );
                           },
                           child: Card(
-                            color: Colors.deepPurpleAccent,
+                            color: Theme.of(context).colorScheme.secondary,
                             child: Row(
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.fromLTRB(
                                     10,
-                                    0,
+                                    10,
                                     20,
-                                    0,
+                                    10,
                                   ),
-                                  child: Image.memory(
-                                    snapshot.data![index].placeImage,
+                                  child: SizedBox(
                                     width: 100,
+                                    height: 100,
+                                    child: Image.memory(
+                                      snapshot.data![index].placeImage,
+                                      width: 100,
+                                    ),
                                   ),
                                 ),
                                 Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          '명칭: ',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        0,
+                                        0,
+                                        0,
+                                        4,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            '명칭: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSecondary,
+                                            ),
                                           ),
-                                        ),
-                                        Text(snapshot.data![index].placeName),
-                                      ],
+                                          SizedBox(
+                                            width: MediaQuery.widthOf(context) * 0.5,
+                                            child: Text(
+                                              snapshot.data![index].placeName,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.onSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          '전화번호: ',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        0,
+                                        4,
+                                        0,
+                                        0,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            '전화번호: ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSecondary,
+                                            ),
                                           ),
-                                        ),
-                                        Text(snapshot.data![index].placePhone),
-                                      ],
+                                          SizedBox(
+                                            width: MediaQuery.widthOf(context) * 0.4,
+                                            child: Text(
+                                              snapshot.data![index].placePhone,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.onSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -146,9 +203,7 @@ class _HomeState extends State<Home> {
       ),
     );
   } // build
-
   // === Functions ===
-
   void reloadData() {
     _handler.queryPlace();
     setState(() {});

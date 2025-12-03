@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,6 +22,7 @@ class _UpdatePlaceState extends State<UpdatePlace> {
   late TextEditingController _lngTextEditingController;  // 경도를 표현하는 TextEditingController
   late TextEditingController _nameTextEditingController; // 이름 TextEditingController
   late TextEditingController _phoneTextEditingController; // 전화 TextEditingController
+  late TextEditingController _addressTextEditingController; // 주소 TextEditingController
   late TextEditingController _estimateTextEditingController; // 평가 TextEditingController
 
   late Position _currentPosition; // 현재 위치 정보
@@ -40,6 +42,7 @@ class _UpdatePlaceState extends State<UpdatePlace> {
     _lngTextEditingController = TextEditingController();
     _nameTextEditingController = TextEditingController();
     _phoneTextEditingController = TextEditingController();
+    _addressTextEditingController = TextEditingController();
     _estimateTextEditingController = TextEditingController();
     _latTextEditingController = TextEditingController();
     _latData = _place.placeLat;
@@ -47,6 +50,7 @@ class _UpdatePlaceState extends State<UpdatePlace> {
     _nameTextEditingController.text = _place.placeName;
     _phoneTextEditingController.text = _place.placePhone;
     _estimateTextEditingController.text = _place.placeEstimate;
+    _addressTextEditingController.text = _place.placeAddress;
     _latTextEditingController.text = _latData.toString();
     _lngTextEditingController.text = _lngData.toString();
     
@@ -73,6 +77,11 @@ class _UpdatePlaceState extends State<UpdatePlace> {
                 onPressed: () {
                   getImageFromGallery(ImageSource.gallery);
                 },
+                style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          foregroundColor: Theme.of(context).colorScheme.onTertiary,
+                          shape: RoundedRectangleBorder(borderRadius:BorderRadiusGeometry.circular(10)),
+                        ),
                 child: Text('이미지 가져오기'),
               ),
               _firstDisp == 0 ?
@@ -87,7 +96,7 @@ class _UpdatePlaceState extends State<UpdatePlace> {
                 height: 200,
                 color: Colors.grey,
                 child: _imageFile != null
-                    ? Image.memory(_place.placeImage)
+                    ? Image.file(File(_imageFile!.path) )
                     : Center(
                         child: Text(
                           '이미지가 선택되지 않았습니다',
@@ -142,6 +151,34 @@ class _UpdatePlaceState extends State<UpdatePlace> {
                 ),
               ),
               Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.widthOf(context) * 0.7,
+                        child: TextField(
+                          controller: _addressTextEditingController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: '주소'),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
+                        child: ElevatedButton(onPressed: () {
+                          getCurrentLocation();
+                        }, 
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          foregroundColor: Theme.of(context).colorScheme.onTertiary,
+                          shape: RoundedRectangleBorder(borderRadius:BorderRadiusGeometry.circular(10)),
+                        ),
+                        child: Text('추출')),
+                      )
+                    ],
+                  ),
+                ),
+              Padding(
                 padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                 child: TextField(
                   controller: _estimateTextEditingController,
@@ -156,6 +193,11 @@ class _UpdatePlaceState extends State<UpdatePlace> {
                 onPressed: () {
                   _firstDisp == 0? checkUpdateExceptImage():checkUpdate();
                 },
+                style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          foregroundColor: Theme.of(context).colorScheme.onTertiary,
+                          shape: RoundedRectangleBorder(borderRadius:BorderRadiusGeometry.circular(10)),
+                        ),
                 child: Text('수정'),
               ),
             ],
@@ -171,7 +213,8 @@ class _UpdatePlaceState extends State<UpdatePlace> {
   {
     if(_nameTextEditingController.text.trim().isEmpty ||
     _phoneTextEditingController.text.trim().isEmpty ||
-    _estimateTextEditingController.text.trim().isEmpty
+    _estimateTextEditingController.text.trim().isEmpty ||
+    _addressTextEditingController.text.trim().isEmpty
     )
     {
       showErrorSnackBar('전부 다 입력해주세요');
@@ -225,6 +268,7 @@ class _UpdatePlaceState extends State<UpdatePlace> {
       seq: _place.seq,
       placeName: _nameTextEditingController.text.trim(), 
       placePhone: _phoneTextEditingController.text.trim(), 
+      placeAddress: _addressTextEditingController.text.trim(), 
       placeLat: _latData, 
       placeLng: _lngData, 
       placeImage: _place.placeImage, 
@@ -232,8 +276,9 @@ class _UpdatePlaceState extends State<UpdatePlace> {
       initDate: DateTime.now().toString(), 
       updateDate: DateTime.now().toString());
    
+      // print('${place.seq}, ${place.placeName}, ${place.placePhone}, ${place.placeAddress}, ${place.placeLat}, ${place.placeLng}, ${place.placeEstimate}, ${place.initDate}, ${place.updateDate}');
 
-    int check = await _handler.insertPlace(place);
+    int check = await _handler.updatePlace(place);
     if (check == 0) {
       showErrorSnackBar('입력이 실패 되었다.');
     } else {
@@ -250,6 +295,7 @@ class _UpdatePlaceState extends State<UpdatePlace> {
       seq: _place.seq,
       placeName: _nameTextEditingController.text.trim(), 
       placePhone: _phoneTextEditingController.text.trim(), 
+      placeAddress: _addressTextEditingController.text.trim(),
       placeLat: _latData, 
       placeLng: _lngData, 
       placeImage: getImage, 
@@ -257,8 +303,9 @@ class _UpdatePlaceState extends State<UpdatePlace> {
       initDate: DateTime.now().toString(), 
       updateDate: DateTime.now().toString() );
    
+      // print('${place.placeName}, ${place.placePhone}, ${place.placeAddress}, ${place.placeLat}, ${place.placeLng}, ${place.placeEstimate}, ${place.initDate}, ${place.updateDate}');
 
-    int check = await _handler.insertPlace(place);
+    int check = await _handler.updatePlace(place);
     if (check == 0) {
       showErrorSnackBar('입력이 실패 되었다.');
     } else {
@@ -294,7 +341,12 @@ class _UpdatePlaceState extends State<UpdatePlace> {
             Get.back();
             Get.back();
           },
-          child: Text('확인'),
+          style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          foregroundColor: Theme.of(context).colorScheme.onTertiary,
+                          shape: RoundedRectangleBorder(borderRadius:BorderRadiusGeometry.circular(10)),
+                        ),
+          child: Text('확인',),
         ),
       ],
     );
@@ -305,23 +357,44 @@ class _UpdatePlaceState extends State<UpdatePlace> {
     if (pickedFile == null) {
       _imageFile = null;
     } else {
+      _firstDisp += 1;
+      print(pickedFile.path);
       _imageFile = XFile(pickedFile.path);
     }
     setState(() {});
   }
 
   Future getCurrentLocation() async {
-    Position position =
-        await Geolocator.getCurrentPosition(); // Geolocator에서 현재 위치를 가져올 동안 대기하고 position에 넣기
-    _currentPosition = position;
-    _latData = _currentPosition.latitude;
-    _lngData = _currentPosition.longitude;
-    _latTextEditingController.text = _latData.toString().substring(0,9);
-    _lngTextEditingController.text = _lngData.toString().substring(0,9);
     // print('$_latData, $_longData, $_canRun');
-    setState(() {});
-  }
+    if(_addressTextEditingController.text.trim().isEmpty)
+    {
+      showErrorSnackBar('주소를 입력하세요');
+    }
+    else
+    {
+      List<Location> locations = await locationFromAddress(_addressTextEditingController.text.trim());
 
+      _latData = locations.first.latitude;
+      _lngData = locations.first.longitude;
+      // print('$_latData, $_lngData, ${locations.first}');
+      
+      String lat = _latData.toString();
+      if(lat.length > 9)
+      {
+        lat = lat.substring(0,9);
+      }
+
+      String lng = _lngData.toString();
+      if(lng.length > 9)
+      {
+        lng = lng.substring(0,9);
+      }
+      _latTextEditingController.text = lat;
+      _lngTextEditingController.text = lng;
+
+      setState(() {});
+    }
+  }
   void checkLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -335,7 +408,6 @@ class _UpdatePlaceState extends State<UpdatePlace> {
     if (permission == LocationPermission.whileInUse ||
         permission == LocationPermission.always) {
       // 퍼미션 허용
-      getCurrentLocation();
     }
   }
 }// class

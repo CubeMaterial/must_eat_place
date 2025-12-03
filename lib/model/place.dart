@@ -4,6 +4,7 @@ class Place {
   int? seq;
   String placeName;
   String placePhone;
+  String placeAddress;
   double placeLat;
   double placeLng;
   Uint8List placeImage;
@@ -15,6 +16,7 @@ class Place {
     this.seq,
     required this.placeName,
     required this.placePhone,
+    required this.placeAddress,
     required this.placeLat,
     required this.placeLng,
     required this.placeImage,
@@ -24,9 +26,10 @@ class Place {
   });
 
   Place.fromMap(Map<String, dynamic> res):
-  seq = res['id'],
+  seq = res['seq'],
   placeName = res['placeName'],
   placePhone = res['placePhone'],
+  placeAddress = res['placeAddress'],
   placeLat = res['placeLat'],
   placeLng = res['placeLng'],
   placeImage = res['placeImage'],

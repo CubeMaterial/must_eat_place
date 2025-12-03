@@ -18,6 +18,7 @@ class DatabaseHandler {
           (seq integer primary key autoincrement,
           placeName text,
           placePhone text,
+          placeAddress text,
           placeLat real,
           placeLng real,
           placeImage blob,
@@ -40,13 +41,14 @@ class DatabaseHandler {
     result = await db.rawInsert(
       '''
       insert into musteatplace
-      (placeName,placePhone, placeLat, placeLng,placeImage, placeEstimate, initDate, updateDate)
+      (placeName, placePhone, placeAddress, placeLat, placeLng,placeImage, placeEstimate, initDate, updateDate)
       values
-      (?,?,?,?,?,?,date('now'),date('now'))
+      (?,?,?,?,?,?,?,date('now'),date('now'))
       ''',
       [
         place.placeName,
         place.placePhone,
+        place.placeAddress,
         place.placeLat,
         place.placeLng,
         place.placeImage,
@@ -65,7 +67,7 @@ class DatabaseHandler {
     result = await db.rawUpdate(
       '''
       update musteatplace
-      set placeName = ?, placePhone = ?, placeLat = ?, 
+      set placeName = ?, placePhone = ?, placeAddress = ?, placeLat = ?, 
       placeLng = ?, placeImage = ?, placeEstimate = ?, 
       initDate = ?, updateDate = date('now')
       where seq = ? 
@@ -73,6 +75,7 @@ class DatabaseHandler {
       [
         place.placeName,
         place.placePhone,
+        place.placeAddress,
         place.placeLat,
         place.placeLng,
         place.placeImage,
